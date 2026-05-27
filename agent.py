@@ -15,5 +15,5 @@ async def process_message(user_number: str, message: str) -> str:
         )
         return response.text
     except Exception as e:
-        print(f"Gemini error: {e}")
-        return "Sorry, I am having trouble right now. Please try again."
+    print(f"Gemini error: {e}")
+    return f"Error: {str(e)}"
