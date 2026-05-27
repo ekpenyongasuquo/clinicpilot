@@ -57,3 +57,10 @@ async def receive_message(request: Request):
 @app.get("/")
 async def root():
     return {"status": "ClinicPilot is running"}
+@app.get("/test-gemini")
+async def test_gemini():
+    response = await process_message(
+        user_number="test",
+        message="Say: ClinicPilot Gemini connection successful"
+    )
+    return {"response": response}
