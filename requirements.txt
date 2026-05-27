@@ -4,3 +4,4 @@ google-genai
 httpx
 python-dotenv
 requests
+groq

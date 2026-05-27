@@ -1,10 +1,10 @@
-from google import genai
+from groq import Groq
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 conversation_history = {}
 
@@ -15,32 +15,31 @@ async def process_message(user_number: str, message: str) -> str:
     if user_number not in conversation_history:
         conversation_history[user_number] = []
 
-    conversation_history[user_number].append(message)
+    conversation_history[user_number].append({
+        "role": "user",
+        "content": message
+    })
 
     recent_history = conversation_history[user_number][-10:]
 
-    conversation_context = "\n".join([
-        f"Message {i+1}: {msg}"
-        for i, msg in enumerate(recent_history)
-    ])
-
-    full_prompt = (
-        SYSTEM_PROMPT
-        + "\n\nConversation so far:\n"
-        + conversation_context
-        + "\n\nRespond to the latest message."
-    )
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}] + recent_history
 
     try:
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=full_prompt
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            max_tokens=500
         )
-        ai_reply = response.text
-        conversation_history[user_number].append(
-            f"ClinicPilot: {ai_reply}"
-        )
+
+        ai_reply = response.choices[0].message.content
+
+        conversation_history[user_number].append({
+            "role": "assistant",
+            "content": ai_reply
+        })
+
         return ai_reply
+
     except Exception as e:
-        print(f"Gemini error: {e}")
+        print(f"Groq error: {e}")
         return f"Error: {str(e)}"
